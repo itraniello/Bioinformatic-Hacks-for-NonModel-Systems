@@ -34,15 +34,18 @@ agat_sq_list_attributes.pl -f bimp2.2_filtered_ensembl.gtf -p all -o all_attribu
 
 At the bottom of the "all_attributes.txt" file it compiles a full list of all the attributes in your GTF, independent of feature type. Remove these using this command:
 
-agat_sp_manage_attributes.pl -f B_impatiens_wyatt_liftoff_ensembl.gtf -att anticodon,copy_num_ID,coverage,db_xref,description,exception,exon_id,exon_number,gbkey,inference,inframe_stop_codon,low_identity,matches_ref_protein,missing_start_codon,missing_stop_codon,model_evidence,note,partial,partial_mapping,previous_transcript_id,product,protein_id,sequence_ID,tr
-ansl_except,valid_ORF,valid_ORFs -p all -o B_impatiens_wyatt_liftoff_simple.gtf -c agat_config_imot.yaml
+agat_sp_manage_attributes.pl -f B_impatiens_wyatt_liftoff_ensembl.gtf -att anticodon,copy_num_ID,coverage,db_xref,description,exception,exon_id,exon_number,extra_copy_number,gene_biotype,gbkey,inference,inframe_stop_codon,low_identity,matches_ref_protein,missing_start_codon,missing_stop_codon,model_evidence,note,partial,partial_mapping,previous_transcript_id,product,protein_id,sequence_ID,transl_except,valid_ORF,valid_ORFs all -o B_impatiens_wyatt_liftoff_ensembl_simple.gtf -c agat_config_imot.yaml
+
 Then get rid of "Parent" and "ID" using regex:
 
-sed -i 's/; ID "[^"]*"//g' bimp2.2_filtered_ensembl_simple.gtf
-sed -i 's/; Parent "[^"]*"//g' bimp2.2_filtered_ensembl_simple.gtf
+sed -i 's/; ID "[^"]*"//g' B_impatiens_wyatt_liftoff_ensembl_simple.gtf
+sed -i 's/; Parent "[^"]*"//g' B_impatiens_wyatt_liftoff_ensembl_simple.gtf
+
+I don't know why, but there are some empty strings surrounded by double quotes. We need to get rid of them.
+sed -i 's/ " "//g' B_impatiens_wyatt_liftoff_ensembl_simple.gtf
 
 Almost there! cellranger-arc requires "transcript" under gene, and some genes (I think those that are not protein-coding) will report "RNA," which the mkref function will not tolerate. Again, clean these up with regex:
 
-sed 's/\bRNA\b/transcript/g'  bimp2.2_filtered_ensembl_simple.gtf >  bimp2.2_filtered_ensembl_final.gtf
+sed 's/\bRNA\b/transcript/g'  B_impatiens_wyatt_liftoff_ensembl_simple.gtf >  B_impatiens_wyatt_liftoff_ensembl_simple_final.gtf
 
 Now you should be good to go to run "mkref" and "count!"
