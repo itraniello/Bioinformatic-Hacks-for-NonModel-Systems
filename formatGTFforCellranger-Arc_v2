@@ -7,23 +7,7 @@ export PATH=/path/to/cellranger-arc-2.0.2:$PATH
 I've run into some issues using an NCBI-derived GTF. These kinds of issues can be really difficult to solve, and I've found that cellranger-arc can succesfully index a genome and perform "count" right up until the end
 when it fails, specifically in the step where a "cloupe" file is made. I don't use the Loupe browser but I also don't have any understanding of its file-types, but the crash, which appears in the stdout and not stderr, 
 is apparently associated with parsing the GTF. Therefore, after much trial-and-error, I follow these steps to modify a non-ensembl-formatted GTF such that it works in cellranger-arc. 
-
-Using cellranger-arc, reformat the GTF with gene features of interest. I first check all the "gene_biotype" entries with this command:
-
-cat <your.gtf> | cut -f 9 | tr ';' '\n' | grep "gene_biotype" | sed 's/gene_biotype//' | sort -u > gtf_attributes.txt
-
-And then I run "mkgtf" using only the features of interest:
-
-cellranger mkgtf ../reference_genome/GCF_000188095.3_BIMP_2.2_genomic.gtf ../reference_genome/GCF_000188095.3_BIMP_2.2_genomic_filtered.gtf \
-        --attribute=gene_biotype:protein_coding \
-        --attribute=gene_biotype:lncRNA \
-        --attribute=gene_biotype:pseudogene \
-        --attribute=gene_biotype:misc_RNA \
-        --attribute=gene_biotype:snRNA \
-        --attribute=gene_biotype:snoRNA
-	
-
-I then use AGAT (https://agat.readthedocs.io/en/latest/) to modify the GTF. AGAT is by far the best GTF/GFF manipulation tool I've used and, barring a few caveats (it won't let you break certain rules of GTF/GFF formatting).
+I use AGAT (https://agat.readthedocs.io/en/latest/) to modify the GTF. AGAT is by far the best GTF/GFF manipulation tool I've used and, barring a few caveats (it won't let you break certain rules of GTF/GFF formatting).
 It's really important that you first edit AGAT's .yaml file to default output GTFs and not GFFs.
 
 Copy the .yaml file into your current directory:
@@ -50,8 +34,8 @@ agat_sq_list_attributes.pl -f bimp2.2_filtered_ensembl.gtf -p all -o all_attribu
 
 At the bottom of the "all_attributes.txt" file it compiles a full list of all the attributes in your GTF, independent of feature type. Remove these using this command:
 
-agat_sp_manage_attributes.pl -f bimp2.2_filtered_ensembl.gtf -att anticodon,db_xref,description,exception,exon_id,exon_number,gbkey,gene_biotype,inference,model_evidence,note,partial,product,protein_id,transl_except -p all -o bimp2.2_filtered_ensembl_simple.gtf -c agat_config_imot.yaml
-
+agat_sp_manage_attributes.pl -f B_impatiens_wyatt_liftoff_ensembl.gtf -att anticodon,copy_num_ID,coverage,db_xref,description,exception,exon_id,exon_number,gbkey,inference,inframe_stop_codon,low_identity,matches_ref_protein,missing_start_codon,missing_stop_codon,model_evidence,note,partial,partial_mapping,previous_transcript_id,product,protein_id,sequence_ID,tr
+ansl_except,valid_ORF,valid_ORFs -p all -o B_impatiens_wyatt_liftoff_simple.gtf -c agat_config_imot.yaml
 Then get rid of "Parent" and "ID" using regex:
 
 sed -i 's/; ID "[^"]*"//g' bimp2.2_filtered_ensembl_simple.gtf
